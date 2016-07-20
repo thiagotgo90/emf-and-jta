@@ -7,13 +7,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PostPersist;
 import javax.persistence.PrePersist;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity
-@NamedQueries({ @NamedQuery(name = Customer.FIND_ALL, query = "SELECT c FROM Customer c"),
+@NamedQueries({
+        @NamedQuery(name = Customer.FIND_ALL, query = "SELECT c FROM Customer c"),
         @NamedQuery(name = Customer.DELETE_ALL, query = "DELETE FROM Customer c") })
 public class Customer {
 
@@ -31,7 +33,8 @@ public class Customer {
     private Date date;
 
     // -------------------------------------------------------------------------------||
-    // Constructors ------------------------------------------------------------------||
+    // Constructors
+    // ------------------------------------------------------------------||
     // -------------------------------------------------------------------------------||
 
     /**
@@ -46,7 +49,8 @@ public class Customer {
     }
 
     // -------------------------------------------------------------------------------||
-    // Lifecycle methods -------------------------------------------------------------||
+    // Lifecycle methods
+    // -------------------------------------------------------------||
     // -------------------------------------------------------------------------------||
 
     @PrePersist
@@ -54,8 +58,14 @@ public class Customer {
         date = new Date();
     }
 
+    @PostPersist
+    public void postPersist() {
+        System.out.println(date);
+    }
+
     // -------------------------------------------------------------------------------||
-    // Getters and setters -----------------------------------------------------------||
+    // Getters and setters
+    // -----------------------------------------------------------||
     // -------------------------------------------------------------------------------||
 
     public Long getId() {
@@ -83,12 +93,14 @@ public class Customer {
     }
 
     // -------------------------------------------------------------------------------||
-    // Contract ----------------------------------------------------------------------||
+    // Contract
+    // ----------------------------------------------------------------------||
     // -------------------------------------------------------------------------------||
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE);
+        ToStringBuilder builder = new ToStringBuilder(this,
+                ToStringStyle.SIMPLE_STYLE);
 
         builder.append("id", id);
         builder.append("firstName", firstName);

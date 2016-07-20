@@ -45,8 +45,10 @@ public class Entities {
     @Path("execute")
     @GET
     public String add() throws Exception {
+        customerBoundary.executePersistenceContextPropagation("Thiago", "Oliveira");
+//        customerBoundary.executeWithTxAndMakeTransactionRollback("Thiago", "Oliveira");
         // customerBoundary.executeWithoutTx("John", "Doe");
-        customerBoundary.executeWithTx("John", "Doe");
+        //customerBoundary.executeWithTx("John", "Doe");
         // customerBoundary.executeWithTxStaredBeforeEntityManager("John", "Doe");
         // customerBoundary.executeWithTxStaredBeforeEntityManagerWithJoin("John", "Doe");
         // customerBoundary.executeWithTxMultipleTransactions("John", "Doe");
