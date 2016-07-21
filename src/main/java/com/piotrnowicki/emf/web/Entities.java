@@ -9,7 +9,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import com.piotrnowicki.emf.boundary.BeanABoundary;
-import com.piotrnowicki.emf.boundary.CustomerBoundary;
+import com.piotrnowicki.emf.boundary.CustomerBoundaryBMT;
+import com.piotrnowicki.emf.boundary.CustomerBoundaryCMT;
 import com.piotrnowicki.emf.entity.Customer;
 
 /**
@@ -22,7 +23,10 @@ import com.piotrnowicki.emf.entity.Customer;
 public class Entities {
 
     @EJB
-    private CustomerBoundary customerBoundary;
+    private CustomerBoundaryCMT customerBoundaryCMT;
+    
+    @EJB
+    private CustomerBoundaryBMT customerBoundaryBMT;
 
     @EJB
     private BeanABoundary beanABoundary;
@@ -45,10 +49,10 @@ public class Entities {
     @Path("execute")
     @GET
     public String add() throws Exception {
-        customerBoundary.executePersistenceContextPropagation("Thiago", "Oliveira");
-//        customerBoundary.executeWithTxAndMakeTransactionRollback("Thiago", "Oliveira");
+        customerBoundaryBMT.executePropagateUserTranscation("Thiago", "Oliveira");
+        // customerBoundary.executeWithTxAndMakeTransactionRollback("Thiago", "Oliveira");
         // customerBoundary.executeWithoutTx("John", "Doe");
-        //customerBoundary.executeWithTx("John", "Doe");
+        // customerBoundary.executeWithTx("John", "Doe");
         // customerBoundary.executeWithTxStaredBeforeEntityManager("John", "Doe");
         // customerBoundary.executeWithTxStaredBeforeEntityManagerWithJoin("John", "Doe");
         // customerBoundary.executeWithTxMultipleTransactions("John", "Doe");

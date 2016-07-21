@@ -3,9 +3,10 @@ package com.piotrnowicki.emf.boundary;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
@@ -15,9 +16,9 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.TypedQuery;
-import javax.transaction.UserTransaction;
 
 import com.piotrnowicki.emf.control.CustomerControlBMT;
+import com.piotrnowicki.emf.control.CustomerControlCMT;
 import com.piotrnowicki.emf.entity.Customer;
 
 /**
@@ -37,15 +38,17 @@ import com.piotrnowicki.emf.entity.Customer;
  * 
  */
 @Stateless
-/*@TransactionManagement(TransactionManagementType.CONTAINER)*/ 
-@TransactionManagement(TransactionManagementType.BEAN)
-public class CustomerBoundary {
+@TransactionManagement(TransactionManagementType.CONTAINER)
+public class CustomerBoundaryCMT {
 
     @Inject
     private Logger logger;
 
     @EJB
-    private CustomerControlBMT customerControlBean;
+    private CustomerControlBMT customerControlBMTBean;
+    
+    @EJB
+    private CustomerControlCMT customerControlCMTBean;
 
     @PersistenceContext
     EntityManager em;
@@ -58,12 +61,6 @@ public class CustomerBoundary {
      */
     @PersistenceUnit
     private EntityManagerFactory emf;
-
-    /**
-     * Used for manually beginning / commiting JTA transactions.
-     */
-    @Resource
-    private UserTransaction utx;
 
     // -------------------------------------------------------------------------------||
     // Business methods
@@ -83,33 +80,27 @@ public class CustomerBoundary {
 
     /**
      * This method is like the
-     * {@link CustomerBoundary#executeWithoutTx(String, String)} but
+     * {@link CustomerBoundaryCMT#executeWithoutTx(String, String)} but
      * EntityManager operations are invoked within running JTA transaction.
      */
     public void executeWithTx(String firstName, String lastName)
             throws Exception {
-        utx.begin();
 
         Customer customer = new Customer(firstName, lastName);
         em.persist(customer);
-        utx.setRollbackOnly();
-        logger.info("Status da transacao: " + utx.getStatus());
 
-        utx.commit();
     }
 
     public void executeWithTxAndMakeTransactionRollback(String firstName,
             String lastName) throws Exception {
 
         Customer customer = new Customer(firstName, lastName);
-        utx.begin();
-        em.persist(customer);
-        utx.commit();
 
-        utx.begin();
+        em.persist(customer);
+
         customer = em.find(Customer.class, 555555L);
         em.persist(customer);
-        utx.commit();
+
     }
 
     /**
@@ -136,8 +127,8 @@ public class CustomerBoundary {
     }
 
     /**
-     * Iniciar uma transação, persistir um objeto, chamar um metodo de outro
-     * EJB que tenha como transação REQUIRED_NEW e verificar se a entidade
+     * Iniciar uma transação, persistir um objeto, chamar um metodo de outro EJB
+     * que tenha como transação REQUIRED_NEW e verificar se a entidade
      * persistido antes vai estar nesse persistence context
      * 
      * 
@@ -146,10 +137,10 @@ public class CustomerBoundary {
      * @throws Exception
      */
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void executePersistenceContextPropagation(String firstName, String lastName) throws Exception {
-        Customer customer = new Customer(firstName, lastName);
-        em.persist(customer);
-        customerControlBean.executeMethodWithTransactionNew();
+//        Customer customer = new Customer(firstName, lastName);
+        customerControlCMTBean.executeMethod();
 
     }
 
@@ -157,15 +148,13 @@ public class CustomerBoundary {
             String lastName) throws Exception {
         EntityManager em = emf.createEntityManager();
 
-        utx.begin();
-
         em.persist(new Customer(firstName, lastName));
 
-        utx.commit();
     }
 
     /**
-     * This method fixes the problem of {@link CustomerBoundary#executeWithTxStaredBeforeEntityManager(String, String)}
+     * This method fixes the problem of
+     * {@link CustomerBoundaryCMT#executeWithTxStaredBeforeEntityManager(String, String)}
      * . If we create an JTA EntityManager <strong>before</strong> the JTA
      * transaction is running, we need to manually say it to
      * <strong>join</strong> the surrounding transaction.
@@ -174,12 +163,9 @@ public class CustomerBoundary {
             String lastName) throws Exception {
         EntityManager em = emf.createEntityManager();
 
-        utx.begin();
-
         em.joinTransaction();
         em.persist(new Customer(firstName, lastName));
 
-        utx.commit();
     }
 
     /**
@@ -188,21 +174,15 @@ public class CustomerBoundary {
      * transactions. In this case we're using two transactions of the same
      * EntityMangaer. Both changes will be persisted in the database.
      */
-    public void executeWithTxMultipleTransactions(String firstName, String lastName) throws Exception {
+    public void executeWithTxMultipleTransactions(String firstName,
+            String lastName) throws Exception {
         EntityManager em = emf.createEntityManager();
 
-        utx.begin();
+        em.joinTransaction();
+        em.persist(new Customer(firstName, lastName));
 
         em.joinTransaction();
         em.persist(new Customer(firstName, lastName));
 
-        utx.commit();
-
-        utx.begin();
-
-        em.joinTransaction();
-        em.persist(new Customer(firstName, lastName));
-
-        utx.commit();
     }
 }
