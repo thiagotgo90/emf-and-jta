@@ -1,0 +1,3 @@
+<entity-mappings>
+    <table-generator name="empGen" table="ID_GEN" pk-column-value="EmpId"/>
+</entity-mappings>

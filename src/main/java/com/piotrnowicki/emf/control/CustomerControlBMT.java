@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
+import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -14,7 +15,7 @@ import javax.transaction.UserTransaction;
 
 import com.piotrnowicki.emf.entity.Customer;
 
-@Stateless
+@Stateful
 @TransactionManagement(TransactionManagementType.BEAN)
 public class CustomerControlBMT {
 
@@ -48,7 +49,8 @@ public class CustomerControlBMT {
     
     public void executeMethodThatDontStartsAnotherTransaction(EntityManager em) throws Exception {
         
-        em.joinTransaction();
+        /*em.joinTransaction();*/
+        utx.begin();
         List<Customer> resultList = em.createNamedQuery(Customer.FIND_ALL, Customer.class).getResultList();
         em.persist(new Customer("ttt1222", "ttt2111"));
         logger.info(resultList.toString());

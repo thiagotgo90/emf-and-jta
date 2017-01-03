@@ -10,9 +10,14 @@ import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
+import javax.interceptor.ExcludeClassInterceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.FlushModeType;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.TypedQuery;
@@ -185,4 +190,22 @@ public class CustomerBoundaryCMT {
         em.persist(new Customer(firstName, lastName));
 
     }
+    
+    
+    @ExcludeClassInterceptors
+    public void outroMetodo(String firstName, String lastName) throws Exception {
+        
+        Customer customer = new Customer(firstName, lastName);
+        
+        em.persist(customer);
+        em.flush();
+        
+        customer.setFirstName("Jao");
+        
+        em.clear();
+        customer = em.merge(customer);
+        
+    }
+    
+    
 }

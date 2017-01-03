@@ -1,14 +1,22 @@
 package com.piotrnowicki.emf.entity;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceProperty;
 import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -24,6 +32,7 @@ public class Customer {
 
     @Id
     @GeneratedValue
+    @PersistenceContext(properties = {@PersistenceProperty(name = "", value = "") })
     private Long id;
 
     private String firstName;
@@ -31,6 +40,10 @@ public class Customer {
     private String lastName;
 
     private Date date;
+
+    @ElementCollection()
+    @CollectionTable(name = "ITEM_ALIASES", joinColumns = @JoinColumn(name = "THE_ITEM_ID"))
+    private List<String> details;
 
     // -------------------------------------------------------------------------------||
     // Constructors
@@ -55,12 +68,24 @@ public class Customer {
 
     @PrePersist
     public void prePersist() {
+        System.out.println("PRE PERSIST");
         date = new Date();
     }
 
     @PostPersist
     public void postPersist() {
-        System.out.println(date);
+        System.out.println("POST PERSIST "+date);
+    }
+    
+    @PreUpdate
+    public void preUpdate() {
+        System.out.println("PRE UPDATE");
+        date = new Date();
+    }
+
+    @PostUpdate
+    public void postUpdate() {
+        System.out.println("POST UPTADE "+date);
     }
 
     // -------------------------------------------------------------------------------||
